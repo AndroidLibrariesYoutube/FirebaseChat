@@ -169,17 +169,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getChatMessage() {
         //Get all chat messages from database
-//        progressBar.setVisibility(View.VISIBLE);
-//        recyclerView.setVisibility(View.INVISIBLE);
+
         query = mDatabaseReference.child("message").child("1").orderByChild("timestamp");
 
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Log.d(TAG,"onChildAdded"+dataSnapshot.getKey());
+                System.out.print(TAG+"onChildAdded" + dataSnapshot.getKey());
                 Chat chat = dataSnapshot.getValue(Chat.class);
                 chatList.add(chat);
-                chatAdapter = new ChatAdapter(context,chatList);
+                chatAdapter = new ChatAdapter(context, chatList);
                 recyclerView.setAdapter(chatAdapter);
                 chatAdapter.notifyDataSetChanged();
 
@@ -209,7 +208,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void createNewMessage() {
-    //Create a new message on send click
+        //Create a new message on send click
         if (!etMessage.getText().toString().equals("")) {
 
             Chat newMessage = new Chat(etMessage.getText().toString(),
@@ -218,7 +217,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     "firebase-token",
                     1,
                     String.valueOf(ServerValue.TIMESTAMP));
-//            System.out.print("Message" + newMessage);
+            System.out.print("Message" + newMessage);
+
             mDatabaseReference.child("message").child("1").push().setValue(newMessage)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -256,8 +256,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         });
 
     }
-
-
 
 
 }
