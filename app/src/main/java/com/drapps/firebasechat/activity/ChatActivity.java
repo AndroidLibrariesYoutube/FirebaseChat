@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.drapps.firebasechat.adapter.ChatAdapter;
 import com.drapps.firebasechat.model.Chat;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -38,8 +39,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String TAG = "ChatActivity";
     Context context = ChatActivity.this;
     BottomSheetBehavior sheetBehavior;
     CardView mediaBottomSheet;
@@ -50,7 +55,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     EditText etMessage;
     private Query query;
     private RecyclerView recyclerView;
-    private FirebaseRecyclerAdapter<Chat, MessagesHolder> firebaseRecyclerAdapter;
+    private ChatAdapter chatAdapter;
+    private List<Chat> chatList = new ArrayList<>();
     LinearLayoutManager linearLayoutManager;
 
 
@@ -162,70 +168,48 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void getChatMessage() {
+        //Get all chat messages from database
 //        progressBar.setVisibility(View.VISIBLE);
 //        recyclerView.setVisibility(View.INVISIBLE);
-        query = mDatabaseReference.child("message").child("1").orderByChild("timestamp").limitToLast(20);
+        query = mDatabaseReference.child("message").child("1").orderByChild("timestamp");
 
-        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+        query.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                progressBar.setVisibility(View.GONE);
-                recyclerView.setVisibility(View.VISIBLE);
-                recyclerView.scrollToPosition(firebaseRecyclerAdapter.getItemCount() - 1);
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Log.d(TAG,"onChildAdded"+dataSnapshot.getKey());
+                Chat chat = dataSnapshot.getValue(Chat.class);
+                chatList.add(chat);
+                chatAdapter = new ChatAdapter(context,chatList);
+                recyclerView.setAdapter(chatAdapter);
+                chatAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-//                progressBar.setVisibility(View.GONE);
 
             }
         });
 
-
-        FirebaseRecyclerOptions<Chat> options = new FirebaseRecyclerOptions.Builder<Chat>()
-                .setQuery(query, Chat.class)
-                .build();
-
-
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Chat, MessagesHolder>(options) {
-            @Override
-            protected void onBindViewHolder(@NonNull MessagesHolder holder, int position, @NonNull Chat model) {
-                holder.BindView(position, model, context);
-
-
-            }
-
-            @NonNull
-            @Override
-            public MessagesHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_chat_bubble, parent, false);
-
-                return new MessagesHolder(view);
-            }
-        };
-        recyclerView.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (firebaseRecyclerAdapter != null) {
-            firebaseRecyclerAdapter.startListening();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        //Stop Listener when activity stop
-        firebaseRecyclerAdapter.stopListening();
     }
 
     private void createNewMessage() {
-
+    //Create a new message on send click
         if (!etMessage.getText().toString().equals("")) {
 
             Chat newMessage = new Chat(etMessage.getText().toString(),
@@ -239,7 +223,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            recyclerView.scrollToPosition(firebaseRecyclerAdapter.getItemCount() - 1);
+                            recyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
 
                             Log.d("New Message", "New message uploaded");
                         }
@@ -252,11 +236,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void scrollToDown() {
-        firebaseRecyclerAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        //Scroll recycler down when new message comes
+        chatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-                int friendlyMessageCount = firebaseRecyclerAdapter.getItemCount();
+                int friendlyMessageCount = chatAdapter.getItemCount();
                 int lastVisiblePosition =
                         linearLayoutManager.findLastCompletelyVisibleItemPosition();
                 // If the recycler view is initially being loaded or the
@@ -270,45 +255,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-
-    }
-}
-
-
-class MessagesHolder extends RecyclerView.ViewHolder {
-
-
-    TextView tvRight, tvLeft;
-
-
-    public MessagesHolder(@NonNull View view) {
-        super(view);
-        tvLeft = view.findViewById(R.id.tv_message_left);
-        tvRight = view.findViewById(R.id.tv_message_right);
-
     }
 
-    void BindView(int position, Chat model, Context context) {
-//        Log.d("Id",model.getSender_id());
-        if (model != null) {
-            if (model.getSender_id() != null && !model.getSender_id().equals("")) {
-                if (model.getSender_id().equals("101")) {
-                    tvLeft.setVisibility(View.GONE);
-                    tvRight.setVisibility(View.VISIBLE);
-                    tvRight.setText(model.getText());
 
-                } else {
-                    tvRight.setVisibility(View.GONE);
-                    tvLeft.setVisibility(View.VISIBLE);
-                    tvLeft.setText(model.getText());
-                }
-            } else {
-                Log.d("Log", "Sender Id id empty or null");
-            }
-        } else {
-            Log.d("Log", "Model is empty");
-        }
-    }
 
 
 }
