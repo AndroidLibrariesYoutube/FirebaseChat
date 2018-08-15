@@ -5,8 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.ChatActivity"
-    android:id="@+id/coordinator"
+    android:id="@+id/coordinator_chat"
     android:background="@android:color/holo_red_dark"
+
     >
 
 
@@ -47,7 +48,9 @@
                 android:hint="@string/type_a_message"
                 android:inputType="text"
                 android:paddingEnd="10dp"
-                android:paddingStart="25dp" />
+                android:paddingStart="25dp"
+                android:drawableEnd="@drawable/ic_attachment_black"/>
+
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/floating_chat"

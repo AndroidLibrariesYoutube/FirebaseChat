@@ -2,4 +2,7 @@
     <string name="app_name">FirebaseChat</string>
     <string name="type_a_message">Type a message</string>
     <string name="set_image">Image</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

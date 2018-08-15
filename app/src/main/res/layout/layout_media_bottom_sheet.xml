@@ -29,18 +29,21 @@
             android:weightSum="3">
 
             <ImageView
+                android:id="@+id/img_select_image"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_camera" />
 
             <ImageView
+                android:id="@+id/img_select_video"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_video" />
 
             <ImageView
+                android:id="@+id/img_select_pdf"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
@@ -57,12 +60,14 @@
             android:weightSum="3">
 
             <ImageView
+                android:id="@+id/img_select_voice"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_microphone" />
 
             <ImageView
+                android:id="@+id/img_select_location"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
